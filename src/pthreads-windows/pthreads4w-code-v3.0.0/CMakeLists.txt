@@ -159,6 +159,24 @@ SET(PTHREADS_SOURCES
 	"pthread_setspecific.c"
 	"pthread_getspecific.c"
 )
+
+IF(STATIC_MT)
+
+set(CompilerFlags
+	CMAKE_CXX_FLAGS
+	CMAKE_CXX_FLAGS_DEBUG
+	CMAKE_CXX_FLAGS_RELEASE
+	CMAKE_C_FLAGS
+	CMAKE_C_FLAGS_DEBUG
+	CMAKE_C_FLAGS_RELEASE
+	)
+foreach(CompilerFlag ${CompilerFlags})
+	string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+endforeach()
+
+ENDIF(STATIC_MT)
+
+# Add shared library
 add_library (${project_name} SHARED ${PTHREADS_SOURCES})
 
 set(project_compile_options -DHAVE_CONFIG_H)
@@ -166,5 +184,16 @@ set(project_compile_options -DHAVE_CONFIG_H)
 target_compile_options(${project_name} PRIVATE ${project_compile_options})
 
 target_link_libraries(${project_name} PRIVATE ${MSVC_LIBS})
+
+# Add static library
+project(${project_name}_static)
+
+add_library (${project_name}_static STATIC ${PTHREADS_SOURCES})
+
+set(project_compile_options -DHAVE_CONFIG_H)
+
+target_compile_options(${project_name}_static PRIVATE ${project_compile_options})
+
+target_link_libraries(${project_name}_static PRIVATE ${MSVC_LIBS})
 
 # TODO: Add tests and install targets if needed.
